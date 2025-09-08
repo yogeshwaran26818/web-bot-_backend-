@@ -5,6 +5,17 @@ const { requireAuth } = require('../middleware/auth');
 const { scrapeWebsite, scrapePageContent } = require('../services/scraper');
 const router = express.Router();
 
+// Get all links for user
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const links = await Link.find({ userId });
+    res.json(links);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/upload', requireAuth, async (req, res) => {
   try {
     const { url } = req.body;

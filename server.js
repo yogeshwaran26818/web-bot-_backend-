@@ -5,19 +5,24 @@ const connectDB = require('./config/db');
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Error handling for missing env vars
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI is required');
+}
 
-// Middleware
-// Handle preflight requests
-app.options('*', cors({
+// Connect to MongoDB with error handling
+connectDB().catch(err => console.error('DB connection failed:', err));
+
+// CORS configuration
+const corsOptions = {
   origin: ['https://web-bot-frontend.vercel.app', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
 
-
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Routes
