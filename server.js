@@ -10,7 +10,13 @@ connectDB().catch(err => console.error('DB connection failed:', err));
 
 // Simple CORS middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://web-bot-frontend.vercel.app');
+  const origin = req.headers.origin;
+  const allowedOrigins = ['https://web-bot-frontend.vercel.app', 'http://localhost:5173'];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -59,6 +65,11 @@ app.use((err, req, res, next) => {
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Test endpoint without auth
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is working', env: process.env.NODE_ENV });
 });
 
 const PORT = process.env.PORT || 5000;
