@@ -46,7 +46,7 @@ const queryRAG = async (question, linkId) => {
     {
       contents: [{
         parts: [{
-          text: `Context: ${context}\n\nQuestion: ${question}\n\nAnswer based on the context:`
+          text: `Context: ${context}\n\nQuestion: ${question}\n\nProvide a clear, professional answer in plain text format without any markdown, asterisks, or special formatting. Use proper capitalization and write in a textbook style with complete sentences and paragraphs:`
         }]
       }]
     }
