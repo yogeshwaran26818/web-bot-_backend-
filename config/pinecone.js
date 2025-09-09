@@ -1,1 +1,0 @@
-// Pinecone removed - using MongoDB for vector storage
