@@ -20,32 +20,49 @@ router.post('/upload', requireAuth, async (req, res) => {
   try {
     const { url } = req.body;
     const userId = req.auth.userId;
-    
+
+    if (!url) {
+      return res.status(400).json({ error: "URL is required" });
+    }
+
+    // Step 1: scrape anchor tags from the website
     const anchorTags = await scrapeWebsite(url);
-    
-    // Create link metadata
+
+    // Step 2: store metadata about this link
     const link = new Link({
       userId,
       originalUrl: url,
       anchorCount: anchorTags.length
     });
     await link.save();
-    
-    // Create separate collection for this website's data
+
+    // Step 3: create a dynamic model for this website’s data
     const WebsiteModel = getWebsiteModel(link._id);
-    
+
+    // Step 4: scrape and save page content for each anchor
     for (let tag of anchorTags) {
-      const content = await scrapePageContent(tag.url);
-      await WebsiteModel.create({
-        url: tag.url,
-        text: tag.text,
-        content
-      });
+      try {
+        const content = await scrapePageContent(tag.url);
+        await WebsiteModel.create({
+          url: tag.url,
+          text: tag.text,
+          content
+        });
+      } catch (err) {
+        console.error(`Failed scraping ${tag.url}:`, err.message);
+      }
     }
-    
-    res.json({ ...link.toObject(), anchorTags });
+
+    // Step 5: return response
+    res.json({
+      success: true,
+      link: link.toObject(),
+      anchorTags
+    });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Upload failed:", error);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 });
 
